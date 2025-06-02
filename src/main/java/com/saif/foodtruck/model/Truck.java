@@ -226,6 +226,34 @@ public class Truck {
         this.location2 = location2;
     }
 
+    public String getProcessedLatitude() {
+        try {
+            if (location2 != null && location2.getCoordinates() != null && location2.getCoordinates().size() > 1) {
+                Object latObj = location2.getCoordinates().get(1);
+                if (latObj != null) {
+                    return String.valueOf(latObj);
+                }
+            }
+        } catch (IndexOutOfBoundsException | ClassCastException e) {
+            // Log error or handle appropriately
+        }
+        return getLatitude(); // Fallback to existing latitude field
+    }
+
+    public String getProcessedLongitude() {
+        try {
+            if (location2 != null && location2.getCoordinates() != null && !location2.getCoordinates().isEmpty()) {
+                Object longObj = location2.getCoordinates().get(0);
+                if (longObj != null) {
+                    return String.valueOf(longObj);
+                }
+            }
+        } catch (IndexOutOfBoundsException | ClassCastException e) {
+            // Log error or handle appropriately
+        }
+        return getLongitude(); // Fallback to existing longitude field
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

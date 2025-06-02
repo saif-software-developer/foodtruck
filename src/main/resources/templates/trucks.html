@@ -6,8 +6,15 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
           integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
           crossorigin="anonymous">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <style>
+        #map { height: 500px; width: 100%; }
+    </style>
 </head>
 <body>
+<h1>Food Truck Map</h1>
+<div id="map"></div>
+
 <h1>Truck list</h1>
 <table class="table table-dark">
     <thead>
@@ -25,5 +32,45 @@
     </tr>
     </tbody>
 </table>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script th:inline="javascript">
+/*<![CDATA[*/
+    var trucks = /*[[${trucks}]]*/ [];
+    var map = L.map('map').setView([37.7749, -122.4194], 12); // Centered on SF
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+
+    trucks.forEach(function(truck) {
+        // Accessing processedLatitude and processedLongitude
+        // Thymeleaf should make these available if they follow JavaBean conventions (getters)
+        var latStr = truck.processedLatitude;
+        var lonStr = truck.processedLongitude;
+
+        if (latStr === null && truck.latitude !== null) {
+            latStr = truck.latitude; // Fallback to direct latitude if processed is null but direct is not
+        }
+        if (lonStr === null && truck.longitude !== null) {
+            lonStr = truck.longitude; // Fallback to direct longitude if processed is null but direct is not
+        }
+        
+        var lat = parseFloat(latStr);
+        var lon = parseFloat(lonStr);
+
+        if (!isNaN(lat) && !isNaN(lon)) {
+            var marker = L.marker([lat, lon]).addTo(map);
+            var popupContent = "<b>" + truck.applicant + "</b><br>" +
+                               (truck.optionalText ? truck.optionalText + "<br>" : "") +
+                               "Location: " + truck.locationDesc + "<br>" +
+                               "Coords: " + lat + ", " + lon;
+            marker.bindPopup(popupContent);
+        } else {
+            console.warn("Invalid or missing coordinates for truck: ", truck.applicant, ", LatStr: ", latStr, ", LonStr: ", lonStr);
+        }
+    });
+/*]]>*/
+</script>
 </body>
 </html>
